@@ -1,5 +1,5 @@
 trigger ValidateEmail on Contact (before insert,before update) {  
-    
+//This is EmailDuplicate Trigger Code ...........................   
     if(Trigger.isInsert)
     {  
         ContactTriggerHandler.checkInputEmailsForInsert(Trigger.New);
