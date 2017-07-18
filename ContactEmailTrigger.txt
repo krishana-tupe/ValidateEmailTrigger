@@ -1,0 +1,13 @@
+trigger ValidateEmail on Contact (before insert,before update) {  
+    
+    if(Trigger.isInsert)
+    {  
+        ContactTriggerHandler.checkInputEmailsForInsert(Trigger.New);
+        
+	}   
+    
+    if(Trigger.isUpdate)
+    {
+         ContactTriggerHandler.checkInputEmailsForUpdate(Trigger.New, Trigger.oldMap);
+	}
+}

@@ -1,0 +1,105 @@
+@isTest
+public class ContactTriggerHandlerTests {
+        @testSetup static void setup() {
+        System.debug('In Test set up::');         
+        List<Contact> lstTestContacts = new List<Contact>();        
+        for(Integer index=0;index<4;index++) {
+          lstTestContacts.add(new Contact(LastName = 'TestContact '+index,Email='TestContact'+index+'@gmail.com'));                     
+        }      
+            insert lstTestContacts; 
+    }
+    
+    public static testmethod void DuplicatesEmailForUpdate(){
+        List<Contact> lstContacts = [SELECT LastName, Email FROM Contact WHERE LastName LIKE 'TestContact%'];
+        lstContacts[0].Email = 'ttest@gmail.com';
+        lstContacts[1].Email = 'ttest@gmail.com';
+        lstContacts[2].Email = 'ttest@gmail.com';
+        lstContacts[3].Email = '';
+       
+        
+        try{
+            update lstContacts;
+            System.assert(false, 'Exception expected');
+        }
+        catch(exception e)
+        {
+            Boolean expectedExceptionThrown =  e.getMessage().contains('Contact List Contains Duplicate Record IN Input List') ? true : false;
+            System.AssertEquals(expectedExceptionThrown, true);
+        }
+    }
+    
+    public static testmethod void DuplicatesEmailForInsert(){
+        List<Contact> lstContacts = new List<Contact>();
+    	lstContacts.add(new Contact(LastName='Contact01',Email=''));
+		lstContacts.add(new Contact(LastName='Contact02',Email=''));
+		lstContacts.add(new Contact(LastName='Contact03',Email=''));
+		lstContacts.add(new Contact(LastName='Contact04',Email='TestContact33@gmail.com'));
+        lstContacts.add(new Contact(LastName='Contact04',Email='TestContact33@gmail.com'));
+		
+       
+          try{
+             List<contact> record;
+     List<Database.SaveResult> res = Database.insert(lstContacts, false);
+                  record=[SELECT Id,Email,LastName FROM Contact  ];
+                System.debug('Record In Database::::'+record);
+         }catch(exception e){
+            Boolean expectedExceptionThrown =  e.getMessage().contains('Contact List Contains Duplicate Record IN Input List') ? true : false;
+            System.AssertEquals(expectedExceptionThrown, true);
+        }
+    }
+    
+    public static testmethod void ContactsExistingInDatabaseForInsert()
+    {
+        List<Contact> lstContacts = new List<Contact>();
+    	lstContacts.add(new Contact(LastName='Contact01',Email='TestContact@gmail.com'));
+		lstContacts.add(new Contact(LastName='Contact02',Email='TestContact1@gmail.com'));
+		lstContacts.add(new Contact(LastName='Contact03',Email='TestContact2@gmail.com'));
+		lstContacts.add(new Contact(LastName='Contact04',Email='TestContact3@gmail.com'));
+		
+         try{
+            insert lstContacts;           
+            System.assert(false, 'Exception expected');
+        }catch(exception e){
+            Boolean expectedExceptionThrown =  e.getMessage().contains('Contact  exist  IN DATABASE') ? true : false;
+            System.AssertEquals(expectedExceptionThrown, true);
+        }
+       
+    }
+       
+     public static testmethod void ContactsExistingInDatabaseForUpdate()
+    {
+    	List<Contact> lstContacts = [SELECT LastName, Email FROM Contact WHERE LastName LIKE 'TestContact%'];
+        lstContacts[1].Email = 'TestContact0@gmail.com';
+        lstContacts[2].Email = 'TestContact1@gmail.com';
+        try{
+           update lstContacts;           
+            System.assert(false, 'Exception expected');
+        }catch(exception e){
+            Boolean expectedExceptionThrown =  e.getMessage().contains('Contact  exist  IN DATABASE') ? true : false;
+            System.AssertEquals(expectedExceptionThrown, true);
+        }
+       
+    }
+    public static testmethod void ContactsWithNullEmails()
+        {
+            List<Contact> lstContacts = [SELECT LastName, Email FROM Contact WHERE LastName LIKE 'TestContact%'];
+        	lstContacts[0].Email = '';
+            lstContacts[1].Email = '';
+            lstContacts[2].Email = '';
+            
+            
+         try{
+             List<contact> record;
+     List<Database.SaveResult> res = Database.update(lstContacts, false);
+System.debug(':::::::::::::'+res);
+for (Database.SaveResult s : res) {
+    if (s.isSuccess()) { 
+       system.debug('Reocrd Updated Successfully ');
+        record=[SELECT Id,Email,LastName FROM Contact ];
+    
+     				} 
+  }
+                 System.debug('Record In Database::::'+record);
+         }catch(exception e){}           
+        }
+}
